@@ -6,4 +6,8 @@
 //  Copyright © 2018년 Sung Hyun. All rights reserved.
 //
 
-import Foundation
+
+class Constants_api {
+    static let GET_APPLE_FEEDS = "https://itunes.apple.com/kr/rss/topfreeapplications"
+    static let GET_APPLE_FEED_DETAIL = "https://itunes.apple.com"
+}

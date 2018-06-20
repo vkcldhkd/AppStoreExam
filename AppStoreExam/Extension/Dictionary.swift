@@ -7,3 +7,15 @@
 //
 
 import Foundation
+
+extension Dictionary {
+    func jsonToString() -> String{
+        do {
+            let data =  try JSONSerialization.data(withJSONObject: self, options: JSONSerialization.WritingOptions.prettyPrinted)
+            return String(data: data, encoding: String.Encoding.utf8) ?? "defaultvalue"
+            
+        } catch let myJSONError {
+            return myJSONError.localizedDescription
+        }
+    }
+}

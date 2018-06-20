@@ -9,5 +9,5 @@
 import UIKit
 
 class DetailPreViewItemCell: UICollectionViewCell {
-    
+    @IBOutlet weak var imgView: UIImageView!
 }
