@@ -65,7 +65,7 @@ extension MainViewController : UITableViewDelegate, UITableViewDataSource {
 
         guard let model = self.feedModel,
         let entry = model.entry else { return }
-        if entry.count - 10 == indexPath.row {
+        if entry.count - 15 == indexPath.row {
             if self.limit < Constants.APPSTORE_MAX_LIMIT{
                 self.limit += Constants.APPSTORE_LIMIT
                 self.getAppList()
