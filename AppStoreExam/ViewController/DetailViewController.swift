@@ -27,9 +27,14 @@ class DetailViewController: UIViewController {
         guard let viewTitle = self.viewTitle else { return }
         self.setViewControllerTitle(title: viewTitle)
     }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        self.detailTableView.reloadData()
     }
 }
 extension DetailViewController {
@@ -47,6 +52,15 @@ extension DetailViewController {
 }
 
 extension DetailViewController : UITableViewDataSource, UITableViewDelegate {
+    //다이나믹뷰를 만들어주는 메소드
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableViewAutomaticDimension
+    }
+    
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableViewAutomaticDimension
+    }
+    
     func numberOfSections(in tableView: UITableView) -> Int {
         // 타이틀, 새로운기능, 미리보기, 내용
         return 4

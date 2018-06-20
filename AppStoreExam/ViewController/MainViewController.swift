@@ -26,6 +26,10 @@ class MainViewController: UIViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        self.appsTableView.reloadData()
+    }
 }
 
 extension MainViewController{
@@ -42,15 +46,6 @@ extension MainViewController{
 }
 
 extension MainViewController : UITableViewDelegate, UITableViewDataSource {
-    //다이나믹뷰를 만들어주는 메소드
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableViewAutomaticDimension
-    }
-    
-    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableViewAutomaticDimension
-    }
-    
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
