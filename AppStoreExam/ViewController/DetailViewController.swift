@@ -54,11 +54,11 @@ extension DetailViewController {
 extension DetailViewController : UITableViewDataSource, UITableViewDelegate {
     //다이나믹뷰를 만들어주는 메소드
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableViewAutomaticDimension
+        return UITableView.automaticDimension
     }
     
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableViewAutomaticDimension
+        return UITableView.automaticDimension
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {

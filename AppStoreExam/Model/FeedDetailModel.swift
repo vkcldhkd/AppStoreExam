@@ -11,14 +11,12 @@
 
 import Foundation
 
-import Foundation
-
 struct FeedDetailModel: Codable {
     let resultCount: Int?
-    let results: [Result]?
+    let results: [DetailResult]?
 }
 
-struct Result: Codable {
+struct DetailResult: Codable {
     let isGameCenterEnabled: Bool?
     let screenshotUrls: [String]?
     let ipadScreenshotUrls, appletvScreenshotUrls: [JSONAny]?
@@ -97,9 +95,9 @@ extension FeedDetailModel {
     }
 }
 
-extension Result {
+extension DetailResult {
     init(data: Data) throws {
-        self = try JSONDecoder().decode(Result.self, from: data)
+        self = try JSONDecoder().decode(DetailResult.self, from: data)
     }
     
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {

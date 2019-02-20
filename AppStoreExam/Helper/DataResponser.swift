@@ -9,14 +9,13 @@
 import Foundation
 
 class DataResponser{
-    class func getFeedList(limit : Int = 50, closure: @escaping (Feed?)->()){
-        RequestManager.request(url: Constants_api.GET_APPLE_FEEDS + "/limit=\(limit)/genre=6015/json") { (json) in
+    class func getFeedList(limit : Int = 100, closure: @escaping (Feed?)->()){
+        RequestManager.request(url: Constants_api.GET_APPLE_FEEDS) { (json) in
             guard let dict = json,
-                let jsonData = dict.jsonToString().data(using: .utf8),
-                let model = try? FeedModel(data: jsonData),
+                let model = try? FeedModel(dict.jsonToString()),
                 let feed = model.feed else { closure(nil); return }
             
-//            LogHelper.printLog("feed : \(feed)")
+            //            LogHelper.printLog("feed : \(feed)")
             closure(feed)
             
         }
@@ -24,9 +23,8 @@ class DataResponser{
     class func getDetailInfo(id : String, closure: @escaping (FeedDetailModel?)->()){
         RequestManager.request(url: Constants_api.GET_APPLE_FEED_DETAIL + "/lookup?id=\(id)&country=kr") { (json) in
             guard let dict = json,
-                let jsonData = dict.jsonToString().data(using: .utf8),
-                let model = try? FeedDetailModel(data: jsonData) else { closure(nil); return }
-            
+                let model = try? FeedDetailModel(dict.jsonToString()) else { closure(nil); return }
+            //            LogHelper.printLog(dict.jsonToString())
             closure(model)
         }
     }

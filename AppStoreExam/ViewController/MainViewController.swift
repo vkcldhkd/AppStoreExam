@@ -9,20 +9,19 @@
 import UIKit
 
 class MainViewController: UIViewController {
-
+    
     @IBOutlet weak var appsTableView: UITableView!
     var feedModel : Feed!
-    var limit = Constants.APPSTORE_LIMIT
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.getAppList()
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        self.setViewControllerTitle(title: "금융")
-        self.getAppList()
+        self.setViewControllerTitle(title: "iOS 무료 앱 순위 1-100")
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
@@ -34,10 +33,10 @@ class MainViewController: UIViewController {
 
 extension MainViewController{
     func getAppList(){
-        DataResponser.getFeedList(limit: self.limit) { (model) in
+        DataResponser.getFeedList() { (model) in
             //            LogHelper.printLog("model : \(model)")
             self.feedModel = model
-//            LogHelper.printLog("self.feedModel.entry?.count : \(self.feedModel.entry?.count)")
+            //            LogHelper.printLog("self.feedModel.entry?.count : \(self.feedModel.entry?.count)")
             DispatchQueue.main.async {
                 self.appsTableView.reloadData()
             }
@@ -52,38 +51,24 @@ extension MainViewController : UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard let model = self.feedModel,
-            let entry = model.entry else { return 0 }
-        return entry.count
+            let results = model.results else { return 0 }
+        return results.count
     }
-    
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
 
-        guard let model = self.feedModel,
-        let entry = model.entry else { return }
-        if entry.count - 15 == indexPath.row {
-            if self.limit < Constants.APPSTORE_MAX_LIMIT{
-                self.limit += Constants.APPSTORE_LIMIT
-                self.getAppList()
-            }
-        }
-        
-    }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "AppsTableViewCell", for: indexPath) as? AppsTableViewCell,
             let model = self.feedModel,
-            let entry = model.entry else { return AppsTableViewCell() }
+            let results = model.results else { return AppsTableViewCell() }
         
-        if entry.count > indexPath.row{
-            let item = entry[indexPath.row]
+        if results.count > indexPath.row{
+            let item = results[indexPath.row]
             
-            if let title = item.title, let titleLabel = title.label, let subTitle = item.rights, let subTitleLabel = subTitle.label, let imImage = item.imImage {
+            
+            if let title = item.name, let subTitle = item.copyright, let imImage = item.artworkUrl100 {
                 
-                cell.titleLabel.text = titleLabel
-                cell.subTitleLabel.text = subTitleLabel
-                
-                if imImage.count > 0 && imImage[0].label != nil{
-                    cell.imgView.downloadImage(urlString: imImage[0].label!)
-                }
+                cell.titleLabel.text = title
+                cell.subTitleLabel.text = subTitle
+                cell.imgView.downloadImage(urlString: imImage)
             }
         }
         
@@ -91,14 +76,16 @@ extension MainViewController : UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
         guard let detailVC = self.returnVC(sbName: Constants.STORYBOARD_TYPE_DETAIL, vcName: "DetailViewController") as? DetailViewController,
             let model = self.feedModel,
-            let entry = model.entry else { return  }
+            let results = model.results else { return  }
         
-        if entry.count > indexPath.row {
-            let item = entry[indexPath.row]
-            if let id = item.id, let attributes = id.attributes , let appstoreID = attributes["im:id"] ,let imName = item.imName, let title = imName.label{
-                LogHelper.printLog("appstoreID : \(appstoreID)")
+        if results.count > indexPath.row {
+            let item = results[indexPath.row]
+            if let appstoreID = item.id, let title = item.name{
+                //                LogHelper.printLog("appstoreID : \(appstoreID)")
                 
                 // set data
                 detailVC.viewTitle = title

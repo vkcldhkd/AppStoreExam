@@ -16,158 +16,72 @@ struct FeedModel: Codable {
 }
 
 struct Feed: Codable {
+    let title: String?
+    let id: String?
     let author: Author?
-    let entry: [Entry]?
-    let updated, rights, title, icon: Icon?
-    let link: [Link]?
-    let id: Icon?
+    let links: [Link]?
+    let copyright, country: String?
+    let icon: String?
+    let updated: String?
+    let results: [Result]?
 }
 
 struct Author: Codable {
-    let name, uri: Icon?
-}
-
-struct Icon: Codable {
-    let label: String?
-}
-
-struct Entry: Codable {
-    let imName: Icon?
-    let imImage: [IMImage]?
-    let summary: Icon?
-    let imPrice: IMPrice?
-    let imContentType: IMContentType?
-    let rights, title: Icon?
-    let link: Link?
-    let id: ID?
-    let imArtist: IMArtist?
-    let category: Category?
-    let imReleaseDate: IMReleaseDate?
-    
-    enum CodingKeys: String, CodingKey {
-        case imName = "im:name"
-        case imImage = "im:image"
-        case summary
-        case imPrice = "im:price"
-        case imContentType = "im:contentType"
-        case rights, title, link, id
-        case imArtist = "im:artist"
-        case category
-        case imReleaseDate = "im:releaseDate"
-    }
-}
-
-struct Category: Codable {
-    let attributes: CategoryAttributes?
-}
-
-struct CategoryAttributes: Codable {
-    let imID: String?
-    let term: PurpleTerm?
-    let scheme: String?
-    let label: PurpleLabel?
-    
-    enum CodingKeys: String, CodingKey {
-        case imID = "im:id"
-        case term, scheme, label
-    }
-}
-
-enum PurpleLabel: String, Codable {
-    case 금융 = "금융"
-}
-
-enum PurpleTerm: String, Codable {
-    case finance = "Finance"
-}
-
-struct ID: Codable {
-    let label: String?
-    let attributes: [String: String]?
-}
-
-struct IMArtist: Codable {
-    let label: String?
-    let attributes: IMArtistAttributes?
-}
-
-struct IMArtistAttributes: Codable {
-    let href: String?
-}
-
-struct IMContentType: Codable {
-    let attributes: IMContentTypeAttributes?
-}
-
-struct IMContentTypeAttributes: Codable {
-    let term: FluffyTerm?
-    let label: FluffyLabel?
-}
-
-enum FluffyLabel: String, Codable {
-    case 앱 = "앱"
-}
-
-enum FluffyTerm: String, Codable {
-    case application = "Application"
-}
-
-struct IMImage: Codable {
-    let label: String?
-    let attributes: IMImageAttributes?
-}
-
-struct IMImageAttributes: Codable {
-    let height: String?
-}
-
-struct IMPrice: Codable {
-    let label: IMPriceLabel?
-    let attributes: IMPriceAttributes?
-}
-
-struct IMPriceAttributes: Codable {
-    let amount: String?
-    let currency: Currency?
-}
-
-enum Currency: String, Codable {
-    case usd = "USD"
-}
-
-enum IMPriceLabel: String, Codable {
-    case 받기 = "받기"
-}
-
-struct IMReleaseDate: Codable {
-    let label: String?
-    let attributes: Icon?
+    let name: String?
+    let uri: String?
 }
 
 struct Link: Codable {
-    let attributes: LinkAttributes?
+    let linkSelf: String?
+    let alternate: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case linkSelf = "self"
+        case alternate
+    }
 }
 
-struct LinkAttributes: Codable {
-    let rel: Rel?
-    let type: TypeEnum?
-    let href: String?
+struct Result: Codable {
+    let artistName, id, releaseDate, name: String?
+    let kind: Kind?
+    let copyright, artistID: String?
+    let artistURL: String?
+    let artworkUrl100: String?
+    let genres: [Genre]?
+    let url: String?
+    let contentAdvisoryRating: ContentAdvisoryRating?
+    
+    enum CodingKeys: String, CodingKey {
+        case artistName, id, releaseDate, name, kind, copyright
+        case artistID = "artistId"
+        case artistURL = "artistUrl"
+        case artworkUrl100, genres, url, contentAdvisoryRating
+    }
 }
 
-enum Rel: String, Codable {
-    case alternate = "alternate"
-    case relSelf = "self"
+enum ContentAdvisoryRating: String, Codable {
+    case explicit = "Explicit"
 }
 
-enum TypeEnum: String, Codable {
-    case textHTML = "text/html"
+struct Genre: Codable {
+    let genreID, name: String?
+    let url: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case genreID = "genreId"
+        case name, url
+    }
 }
 
-// MARK: Convenience initializers
+enum Kind: String, Codable {
+    case iosSoftware = "iosSoftware"
+}
+
+// MARK: Convenience initializers and mutators
 
 extension FeedModel {
     init(data: Data) throws {
-        self = try JSONDecoder().decode(FeedModel.self, from: data)
+        self = try newJSONDecoder().decode(FeedModel.self, from: data)
     }
     
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -181,8 +95,16 @@ extension FeedModel {
         try self.init(data: try Data(contentsOf: url))
     }
     
+    func with(
+        feed: Feed?? = nil
+        ) -> FeedModel {
+        return FeedModel(
+            feed: feed ?? self.feed
+        )
+    }
+    
     func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
+        return try newJSONEncoder().encode(self)
     }
     
     func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
@@ -192,7 +114,7 @@ extension FeedModel {
 
 extension Feed {
     init(data: Data) throws {
-        self = try JSONDecoder().decode(Feed.self, from: data)
+        self = try newJSONDecoder().decode(Feed.self, from: data)
     }
     
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -206,8 +128,32 @@ extension Feed {
         try self.init(data: try Data(contentsOf: url))
     }
     
+    func with(
+        title: String?? = nil,
+        id: String?? = nil,
+        author: Author?? = nil,
+        links: [Link]?? = nil,
+        copyright: String?? = nil,
+        country: String?? = nil,
+        icon: String?? = nil,
+        updated: String?? = nil,
+        results: [Result]?? = nil
+        ) -> Feed {
+        return Feed(
+            title: title ?? self.title,
+            id: id ?? self.id,
+            author: author ?? self.author,
+            links: links ?? self.links,
+            copyright: copyright ?? self.copyright,
+            country: country ?? self.country,
+            icon: icon ?? self.icon,
+            updated: updated ?? self.updated,
+            results: results ?? self.results
+        )
+    }
+    
     func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
+        return try newJSONEncoder().encode(self)
     }
     
     func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
@@ -217,7 +163,7 @@ extension Feed {
 
 extension Author {
     init(data: Data) throws {
-        self = try JSONDecoder().decode(Author.self, from: data)
+        self = try newJSONDecoder().decode(Author.self, from: data)
     }
     
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -231,358 +177,18 @@ extension Author {
         try self.init(data: try Data(contentsOf: url))
     }
     
-    func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
-    
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-extension Icon {
-    init(data: Data) throws {
-        self = try JSONDecoder().decode(Icon.self, from: data)
-    }
-    
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-    
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
+    func with(
+        name: String?? = nil,
+        uri: String?? = nil
+        ) -> Author {
+        return Author(
+            name: name ?? self.name,
+            uri: uri ?? self.uri
+        )
     }
     
     func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
-    
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-extension Entry {
-    init(data: Data) throws {
-        self = try JSONDecoder().decode(Entry.self, from: data)
-    }
-    
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-    
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-    
-    func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
-    
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-extension Category {
-    init(data: Data) throws {
-        self = try JSONDecoder().decode(Category.self, from: data)
-    }
-    
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-    
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-    
-    func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
-    
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-extension CategoryAttributes {
-    init(data: Data) throws {
-        self = try JSONDecoder().decode(CategoryAttributes.self, from: data)
-    }
-    
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-    
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-    
-    func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
-    
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-extension ID {
-    init(data: Data) throws {
-        self = try JSONDecoder().decode(ID.self, from: data)
-    }
-    
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-    
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-    
-    func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
-    
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-extension IMArtist {
-    init(data: Data) throws {
-        self = try JSONDecoder().decode(IMArtist.self, from: data)
-    }
-    
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-    
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-    
-    func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
-    
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-extension IMArtistAttributes {
-    init(data: Data) throws {
-        self = try JSONDecoder().decode(IMArtistAttributes.self, from: data)
-    }
-    
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-    
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-    
-    func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
-    
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-extension IMContentType {
-    init(data: Data) throws {
-        self = try JSONDecoder().decode(IMContentType.self, from: data)
-    }
-    
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-    
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-    
-    func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
-    
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-extension IMContentTypeAttributes {
-    init(data: Data) throws {
-        self = try JSONDecoder().decode(IMContentTypeAttributes.self, from: data)
-    }
-    
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-    
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-    
-    func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
-    
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-extension IMImage {
-    init(data: Data) throws {
-        self = try JSONDecoder().decode(IMImage.self, from: data)
-    }
-    
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-    
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-    
-    func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
-    
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-extension IMImageAttributes {
-    init(data: Data) throws {
-        self = try JSONDecoder().decode(IMImageAttributes.self, from: data)
-    }
-    
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-    
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-    
-    func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
-    
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-extension IMPrice {
-    init(data: Data) throws {
-        self = try JSONDecoder().decode(IMPrice.self, from: data)
-    }
-    
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-    
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-    
-    func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
-    
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-extension IMPriceAttributes {
-    init(data: Data) throws {
-        self = try JSONDecoder().decode(IMPriceAttributes.self, from: data)
-    }
-    
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-    
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-    
-    func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
-    
-    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
-        return String(data: try self.jsonData(), encoding: encoding)
-    }
-}
-
-extension IMReleaseDate {
-    init(data: Data) throws {
-        self = try JSONDecoder().decode(IMReleaseDate.self, from: data)
-    }
-    
-    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
-        guard let data = json.data(using: encoding) else {
-            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
-        }
-        try self.init(data: data)
-    }
-    
-    init(fromURL url: URL) throws {
-        try self.init(data: try Data(contentsOf: url))
-    }
-    
-    func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
+        return try newJSONEncoder().encode(self)
     }
     
     func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
@@ -592,7 +198,7 @@ extension IMReleaseDate {
 
 extension Link {
     init(data: Data) throws {
-        self = try JSONDecoder().decode(Link.self, from: data)
+        self = try newJSONDecoder().decode(Link.self, from: data)
     }
     
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -606,8 +212,18 @@ extension Link {
         try self.init(data: try Data(contentsOf: url))
     }
     
+    func with(
+        linkSelf: String?? = nil,
+        alternate: String?? = nil
+        ) -> Link {
+        return Link(
+            linkSelf: linkSelf ?? self.linkSelf,
+            alternate: alternate ?? self.alternate
+        )
+    }
+    
     func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
+        return try newJSONEncoder().encode(self)
     }
     
     func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
@@ -615,9 +231,9 @@ extension Link {
     }
 }
 
-extension LinkAttributes {
+extension Result {
     init(data: Data) throws {
-        self = try JSONDecoder().decode(LinkAttributes.self, from: data)
+        self = try newJSONDecoder().decode(Result.self, from: data)
     }
     
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -631,11 +247,94 @@ extension LinkAttributes {
         try self.init(data: try Data(contentsOf: url))
     }
     
+    func with(
+        artistName: String?? = nil,
+        id: String?? = nil,
+        releaseDate: String?? = nil,
+        name: String?? = nil,
+        kind: Kind?? = nil,
+        copyright: String?? = nil,
+        artistID: String?? = nil,
+        artistURL: String?? = nil,
+        artworkUrl100: String?? = nil,
+        genres: [Genre]?? = nil,
+        url: String?? = nil,
+        contentAdvisoryRating: ContentAdvisoryRating?? = nil
+        ) -> Result {
+        return Result(
+            artistName: artistName ?? self.artistName,
+            id: id ?? self.id,
+            releaseDate: releaseDate ?? self.releaseDate,
+            name: name ?? self.name,
+            kind: kind ?? self.kind,
+            copyright: copyright ?? self.copyright,
+            artistID: artistID ?? self.artistID,
+            artistURL: artistURL ?? self.artistURL,
+            artworkUrl100: artworkUrl100 ?? self.artworkUrl100,
+            genres: genres ?? self.genres,
+            url: url ?? self.url,
+            contentAdvisoryRating: contentAdvisoryRating ?? self.contentAdvisoryRating
+        )
+    }
+    
     func jsonData() throws -> Data {
-        return try JSONEncoder().encode(self)
+        return try newJSONEncoder().encode(self)
     }
     
     func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
         return String(data: try self.jsonData(), encoding: encoding)
     }
+}
+
+extension Genre {
+    init(data: Data) throws {
+        self = try newJSONDecoder().decode(Genre.self, from: data)
+    }
+    
+    init(_ json: String, using encoding: String.Encoding = .utf8) throws {
+        guard let data = json.data(using: encoding) else {
+            throw NSError(domain: "JSONDecoding", code: 0, userInfo: nil)
+        }
+        try self.init(data: data)
+    }
+    
+    init(fromURL url: URL) throws {
+        try self.init(data: try Data(contentsOf: url))
+    }
+    
+    func with(
+        genreID: String?? = nil,
+        name: String?? = nil,
+        url: String?? = nil
+        ) -> Genre {
+        return Genre(
+            genreID: genreID ?? self.genreID,
+            name: name ?? self.name,
+            url: url ?? self.url
+        )
+    }
+    
+    func jsonData() throws -> Data {
+        return try newJSONEncoder().encode(self)
+    }
+    
+    func jsonString(encoding: String.Encoding = .utf8) throws -> String? {
+        return String(data: try self.jsonData(), encoding: encoding)
+    }
+}
+
+fileprivate func newJSONDecoder() -> JSONDecoder {
+    let decoder = JSONDecoder()
+    if #available(iOS 10.0, OSX 10.12, tvOS 10.0, watchOS 3.0, *) {
+        decoder.dateDecodingStrategy = .iso8601
+    }
+    return decoder
+}
+
+fileprivate func newJSONEncoder() -> JSONEncoder {
+    let encoder = JSONEncoder()
+    if #available(iOS 10.0, OSX 10.12, tvOS 10.0, watchOS 3.0, *) {
+        encoder.dateEncodingStrategy = .iso8601
+    }
+    return encoder
 }

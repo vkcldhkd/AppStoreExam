@@ -8,6 +8,6 @@
 
 
 class Constants_api {
-    static let GET_APPLE_FEEDS = "https://itunes.apple.com/kr/rss/topfreeapplications"
+    static let GET_APPLE_FEEDS = "https://rss.itunes.apple.com/api/v1/kr/ios-apps/top-free/all/100/explicit.json"
     static let GET_APPLE_FEED_DETAIL = "https://itunes.apple.com"
 }

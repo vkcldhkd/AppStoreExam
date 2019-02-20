@@ -36,7 +36,7 @@ extension DetailTitleViewCell {
         guard let appstoreURL = self.appstoreURL,
             let url = URL(string: appstoreURL) else { return }
         
-        #if (arch(x86_64) || arch(i386)) && os(iOS)
+        #if targetEnvironment(simulator)
             LogHelper.printLog("Simulator에서는 앱스토어 실행 불가!")
             
             guard let topVC = UIApplication.shared.topViewController() else { return }
