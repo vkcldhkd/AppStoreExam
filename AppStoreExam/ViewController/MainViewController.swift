@@ -33,10 +33,10 @@ class MainViewController: UIViewController {
 
 extension MainViewController{
     func getAppList(){
-        DataResponser.getFeedList() { (model) in
-            //            LogHelper.printLog("model : \(model)")
+        DataResponser.getFeedList() { [weak self] model in
+            guard let self = self else { return }
+            
             self.feedModel = model
-            //            LogHelper.printLog("self.feedModel.entry?.count : \(self.feedModel.entry?.count)")
             DispatchQueue.main.async {
                 self.appsTableView.reloadData()
             }

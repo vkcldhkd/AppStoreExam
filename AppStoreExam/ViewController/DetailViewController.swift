@@ -39,9 +39,11 @@ class DetailViewController: UIViewController {
 }
 extension DetailViewController {
     func getInfo(){
-        DataResponser.getDetailInfo(id: self.appstoreID) { (model) in
+        DataResponser.getDetailInfo(id: self.appstoreID) { [weak self] model in
 //            LogHelper.printLog("model : \(model)")
-            guard let model = model else { return }
+            guard let self = self,
+                let model = model else { return }
+            
             self.feedDetailModel = model
             
             DispatchQueue.main.async {
